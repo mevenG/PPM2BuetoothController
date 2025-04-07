@@ -18,14 +18,14 @@ This project converts PPM signals from a FlySky FS-i6 transmitter into a Bluetoo
 ## Hardware Requirements
 
 - ESP32-C3 development board
-- FlySky FS-i6 transmitter
-- PPM receiver compatible with FlySky FS-i6
+- Any controller with PPM output (I used a FlySky fs-i6 for testing)
 - USB cable for programming and power
 
 ## Software Requirements
 
 - Arduino IDE with ESP32 board support
 - [BleGamepad](https://github.com/lemmingDev/ESP32-BLE-Gamepad) library
+- A drone sim, or any tool to see Bluetooth controller inputs like [Gamepad Tester](https://gamepadtester.net/)
 
 ## Installation
 
@@ -44,6 +44,27 @@ This project converts PPM signals from a FlySky FS-i6 transmitter into a Bluetoo
 
 4. **Configure the project:**
    - Adjust `channelSettings` in `main.ino` to match your PPM channel configuration. Users can modify the parameters to adapt it to almost any controller with PPM output.
+
+   Example configuration:
+   ```cpp
+   #define PPM_PIN 4                // PPM input pin
+   #define NUM_CHANNELS 6           // Total PPM channels
+   #define FRAME_GAP_THRESHOLD 5000 // Frame gap threshold in microseconds
+   #define SMOOTHING_FRAMES 5       // Number of frames for smoothing
+
+   ChannelConfig channelSettings[NUM_CHANNELS] = { // Each channel has to be referenced here
+     {1000, 2000, false, AXIS_LINEAR}, // CH1
+     {1000, 2000, false, AXIS_LINEAR}, // CH2
+     {1000, 2000, false, AXIS_LINEAR}, // CH3
+     {1000, 2000, false, AXIS_LINEAR}, // CH4
+     {1000, 2000, false, AXIS_LINEAR}, // CH5
+     {1000, 2000, false, AXIS_LINEAR}  // CH6
+     // {pulseMin, pulseMax, inverted, mode}
+   };
+   ```
+   - `pulseMin` and `pulseMax` define the expected PPM pulse width range.
+   - `inverted` can be set to `true` to invert the axis.
+   - `mode` can be `AXIS_LINEAR` or `AXIS_CENTERED`.
 
 5. **Upload the code:**
    - Connect your ESP32-C3 to your computer.
