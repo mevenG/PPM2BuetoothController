@@ -36,6 +36,22 @@ uint8_t bufferIndex = 0;
 
 BleGamepad bleGamepad("FlySky-BLE", "ESP32-C3", 100);
 
+// Function to draw visualization bar
+void printBar(int percent, int barWidth = 30) {
+  String bar = "[";
+  int filledWidth = map(percent, 0, 100, 0, barWidth);
+  
+  for (int i = 0; i < barWidth; i++) {
+    if (i < filledWidth) {
+      bar += "█";
+    } else {
+      bar += " ";
+    }
+  }
+  bar += "]";
+  Serial.print(bar);
+}
+
 void IRAM_ATTR ppmISR() {
   unsigned long now = micros();
   unsigned long pulseWidth = now - lastRise;
@@ -119,9 +135,46 @@ void loop() {
       mapped[5]
     );
 
+    // Optional debug visualization when serial monitor is connected
+    static unsigned long lastDebugTime = 0;
+    if (Serial && millis() - lastDebugTime > 50) {  // Only debug if Serial is connected and every 50ms
+      Serial.println("\n--- Channel Values ---");
+      for (int ch = 0; ch < NUM_CHANNELS; ch++) {
+        int val = ppmValues[ch];
+        int percent = map(val, channelSettings[ch].pulseMin, channelSettings[ch].pulseMax, 0, 100);
+        percent = constrain(percent, 0, 100);
+        if (channelSettings[ch].inverted) percent = 100 - percent;
+        
+        // Display channel info with visualization bar
+        Serial.printf("CH%d [%4d µs] %3d%% ", ch+1, val, percent);
+        printBar(percent);
+        
+        // Show output value and mode
+        if (channelSettings[ch].mode == AXIS_CENTERED) {
+          int16_t output = map(percent, 0, 100, -32767, 32767);
+          Serial.printf(" Out: %6d (CENTERED)", output);
+        } else {
+          int16_t output = map(percent, 0, 100, 0, 32767);
+          Serial.printf(" Out: %6d (LINEAR)", output);
+        }
+        
+        if (channelSettings[ch].inverted) {
+          Serial.print(" [INV]");
+        }
+        
+        Serial.println();
+      }
+      
+      // Show BLE status
+      Serial.println("--- BLE Status: Connected ---");
+      lastDebugTime = millis();
+    }
+
   } else {
     Serial.println("🔌 Waiting for BLE connection...");
+    delay(1000); // Longer delay when not connected to reduce log spam
   }
 
+  // Short delay to prevent overwhelming the system
   delay(2);
 }
