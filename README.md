@@ -1,6 +1,6 @@
-# FlySky FS-i6 PPM to BLE Gamepad
+# RC Controller PPM to BLE Gamepad
 
-This project converts PPM signals from a FlySky FS-i6 transmitter into a Bluetooth Low Energy (BLE) gamepad using an ESP32-C3. The gamepad can be used to control various applications that support BLE gamepad input.
+This project converts PPM signals from a RC Controller into a Bluetooth Low Energy (BLE) gamepad using an ESP32-C3. The gamepad can be used to control various applications that support BLE gamepad input.
 
 ## Repository
 
@@ -14,11 +14,12 @@ This project converts PPM signals from a FlySky FS-i6 transmitter into a Bluetoo
 - Configurable channel inversion
 - Smoothing of PPM signals for stable input
 - BLE connection status feedback
+- Built-in debug visualization when serial monitor is connected
 
 ## Hardware Requirements
 
 - ESP32-C3 development board
-- Any controller with PPM output (I used a FlySky fs-i6 for testing)
+- Any controller with PPM output (I used a FlySky FS-i6 for testing)
 - USB cable for programming and power
 
 ## Software Requirements
@@ -80,10 +81,40 @@ This project converts PPM signals from a FlySky FS-i6 transmitter into a Bluetoo
    - Use a USB cable to power the ESP32-C3.
 
 3. **Pair with a device:**
-   - Search for "FlySky-BLE" on your BLE-enabled device and pair with it.
+   - Search for "BLE-RCController" on your BLE-enabled device and pair with it.
 
 4. **Start using the gamepad:**
    - Once connected, the gamepad will send axis data based on the PPM input.
+
+## Debug Visualization
+
+The project includes a built-in debug visualization that automatically activates when a serial monitor is connected:
+
+1. **Activating debug mode:**
+   - Connect the ESP32-C3 to your computer via USB
+   - Open the Arduino IDE Serial Monitor (set to 115200 baud)
+   - The debug visualization will automatically start
+
+2. **Debug display features:**
+   - Displays a real-time chart of all channel values every 50ms
+   - Shows raw PPM values in microseconds and mapped percentages
+   - Visual bar graphs represent the position of each channel
+   - Displays actual output values sent to the gamepad
+   - Indicates mode (LINEAR/CENTERED) and inversion status for each channel
+   - Shows BLE connection status
+
+3. **Example debug output:**
+   ```
+   --- BLE Status: Connected ---
+   
+   --- Channel Values ---
+   CH1 [1500 µs]  50% [███████████████               ] Out:  16383 (LINEAR)
+   CH2 [1750 µs]  75% [█████████████████████         ] Out:  24575 (LINEAR)
+   CH3 [1250 µs]  25% [███████                       ] Out:   8191 (LINEAR)
+   CH4 [2000 µs] 100% [██████████████████████████████] Out:  32767 (LINEAR)
+   CH5 [1000 µs]   0% [                              ] Out:      0 (LINEAR)
+   CH6 [1500 µs]  50% [███████████████               ] Out:      0 (CENTERED)
+   ```
 
 ## Troubleshooting
 
@@ -93,6 +124,10 @@ This project converts PPM signals from a FlySky FS-i6 transmitter into a Bluetoo
 
 - **Unexpected axis behavior:**
   - Verify the PPM channel configuration and adjust `channelSettings` as needed.
+  - Use the debug visualization to see actual channel values and outputs.
+
+- **Poor responsiveness:**
+  - Adjust the `SMOOTHING_FRAMES` value. Lower values give more responsive but potentially jittery control.
 
 ## Contributing
 
