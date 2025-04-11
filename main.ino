@@ -13,10 +13,12 @@
 #include <BleGamepad.h>
 
 // ===== Configuration =====
-#define PPM_PIN 4                // Pin where PPM signal is connected
-#define NUM_CHANNELS 6           // Number of PPM channels to process
-#define FRAME_GAP_THRESHOLD 5000 // Microseconds threshold to detect frame gap
-#define SMOOTHING_FRAMES 5       // Number of frames to average for smoothing (higher = smoother but more latency)
+#define PPM_PIN 4                  // Pin where PPM signal is connected
+#define NUM_CHANNELS 6             // Number of PPM channels to process
+#define FRAME_GAP_THRESHOLD 5000   // Microseconds threshold to detect frame gap
+#define SMOOTHING_FRAMES 5         // Number of frames to average for smoothing (higher = smoother but more latency)
+#define NOISE_THRESHOLD 10         // Minimum change required to update value
+#define EMA_ALPHA 0.1              // Smoothing factor (0 < EMA_ALPHA <= 1)
 
 // Define axis modes
 enum AxisMode {
@@ -138,19 +140,13 @@ void loop() {
 
       // Only add valid values to the smoothing buffer
       if (val >= 800 && val <= 2200) {
-        ppmBuffer[ch][bufferIndex] = val;
+        // Apply noise threshold
+        if (abs(val - ppmValues[ch]) > NOISE_THRESHOLD) {
+          // Use EMA for smoothing
+          ppmValues[ch] = (EMA_ALPHA * val) + ((1 - EMA_ALPHA) * ppmValues[ch]);
+        }
       }
-
-      // Calculate average (smoothed) value
-      uint32_t sum = 0;
-      for (int i = 0; i < SMOOTHING_FRAMES; i++) {
-        sum += ppmBuffer[ch][i];
-      }
-      ppmValues[ch] = sum / SMOOTHING_FRAMES;
     }
-
-    // Move to next position in the smoothing buffer
-    bufferIndex = (bufferIndex + 1) % SMOOTHING_FRAMES;
 
     // Map PPM values to gamepad axes values
     int16_t mapped[NUM_CHANNELS];
