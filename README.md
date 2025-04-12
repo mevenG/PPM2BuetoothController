@@ -15,6 +15,7 @@ This project converts PPM signals from a RC Controller into a Bluetooth Low Ener
 - Smoothing of PPM signals for stable input
 - BLE connection status feedback
 - Built-in debug visualization when serial monitor is connected
+- **Calibration data saving and loading**: Automatically saves calibration data to EEPROM and loads it on startup.
 
 ## Hardware Requirements
 
@@ -26,7 +27,7 @@ This project converts PPM signals from a RC Controller into a Bluetooth Low Ener
 
 - Arduino IDE with ESP32 board support
 - [BleGamepad](https://github.com/lemmingDev/ESP32-BLE-Gamepad) library
-- A drone sim, or any tool to see Bluetooth controller inputs like [Gamepad Tester](https://gamepadtester.net/)
+- A drone sim, or any tool to see Bluetooth controller inputs like [HTML5 Gamepad Tester](https://greggman.github.io/html5-gamepad-test/)
 
 ## Installation
 
@@ -102,6 +103,7 @@ The project includes a built-in debug visualization that automatically activates
    - Displays actual output values sent to the gamepad
    - Indicates mode (LINEAR/CENTERED) and inversion status for each channel
    - Shows BLE connection status
+   - **Displays loaded configuration**: Prints the loaded calibration and optimal parameters at startup.
 
 3. **Example debug output:**
    ```
@@ -140,3 +142,16 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Acknowledgments
 
 - [ESP32-BLE-Gamepad](https://github.com/lemmingDev/ESP32-BLE-Gamepad) for the BLE gamepad library.
+
+## Calibration
+
+To calibrate the PPM channels, follow these steps:
+
+1. **Calibration Button Pin**:
+   - The calibration button is connected to pin `BUTTON_PIN` (default is pin 5).
+
+2. **Calibration Process**:
+   - **Start Calibration**: Press the calibration button to enter calibration mode. The built-in LED will turn on to indicate that calibration mode is active.
+   - **Move Controls**: Move all controls to their extremes to record the minimum and maximum pulse widths for each channel. Do it slowly, you have all of your time.
+   - **End Calibration**: Press the button again to end calibration. The LED will turn off, the smoothing, noise threshold and EMA calibration will take half a second. Then the calibration data will be saved to EEPROM.
+   - **Confirmation**: The calibration results will be displayed in the serial monitor, showing the min and max values for each channel.
